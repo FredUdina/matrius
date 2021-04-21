@@ -1,0 +1,223 @@
+---
+title: 'Matrius-guia18-v02: Determinants'
+author: "f.u., a.g."
+date: "1/28/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(comment = "")
+```
+
+## Definició i notacions
+
+Calcular el determinant d'una matriu quadrada en R és ben fàcil, fem servir la funció `det()`.
+
+
+
+```{r}
+A <- matrix(c(2, 0, 3, 4, 7, 5,  5, 4, 9), ncol = 3)
+A
+det(A)
+```
+
+### Propietats dels determinants
+
+Fem servir aquesta matriu
+
+```{r}
+A <- matrix(sample(-12:12), nrow = 5) # són els nombres des de -12 fins a 12 reordenats aleatòriament
+A
+det(A)
+det(t(A)) # Propietat D2: el determinant de la transposada és igual al de la original
+```
+
+Propietat D3,
+la comprovem en un cas: la matriu $B$ és com la $A$ però la fila 3 està multiplicada per -2.
+
+```{r}
+B <- A
+B[3,] <- -2 * B[3,]
+B
+det(B)
+# Propietat D4, el determinant de 2A és $2^5$ vegades el de A
+det(2*A)
+(2^5 * det(A))
+```
+
+Propietat D5:
+
+Per intercanviar dues files demanem les files 2,1,3,4,5 i totes les columnes:
+
+```{r}
+A2 <- A[c(2,1,3,4,5),]
+A2
+det(A2)
+```
+
+Propietat D8:
+
+Per substituir la columna 3 per la suma d'ella amb -2 vegades la columna 4:
+
+```{r}
+A[,3] <- A[,3] - 2 * A[,4]
+A
+det(A) # el determinant no ha canviat
+```
+
+Propietat D9: El determinant del producte és el producte de determinants
+
+
+```{r}
+A <- matrix(sample(-12:12), nrow = 5) # són els nombres des de -12 fins a 12 reordenats aleatòriament
+B <- matrix(sample(-12:12), nrow = 5) # són els nombres des de -12 fins a 12 reordenats aleatòriament
+det(A%*%B)
+det(A)*det(B)
+```
+
+### Determinants i dependència lineal
+
+Si tenim dos vectors del pla ${\cal R}^2$ o tres vectors de ${\cal R}^3$ podem comprobar la seva independència lineal formant una matriu amb els vectors i calculant-ne el determinant. Aquí ho fem a vectors de ${\cal R}^4$ i fem servir la funció **cbin()** que serveix per juntar-los en columnes (la funció **rbind()** fa el mateix però en files).
+
+```{r}
+v1 <- c(1, 0, -1, 1)
+v2 <- c(-1, 1, 0, 1)
+v3 <- c(0, -1, -1/2, 1/2)
+v4 <- c(1/3, -3, 1/4, 0)
+M <- cbind(v1,v2,v3,v4)
+M
+round(M,2) # arrodonim a dos decimals
+det(M)
+```
+
+### Producte vectorial
+
+Quan parlem de producte de vectors hem d'anar en compte. Fixa't en els diferents productes:
+
+```{r}
+v1 <- c(1, 0, -1, 1)
+v2 <- c(-1, 1, 1, 1)
+v1 * v2 # és el producte terme a terme
+v1 %*% v2 # fem servir el producte matricial i obtenim el que en diem producte escalar
+# 
+sum(v1*v2) # millor així, que ens ho torna com a un sol nombre
+```
+
+El producte vectorial que usem en el curs no està definit en R, però es pot utilitzar el package **pracma** que té moltes funcions útils per a l'àlgebra lineal i de matrius.
+
+La funció `cross` de la llibreria **pracma** calcula el producte vectorial (en anglès se'n *vector product* or *cross product*).
+
+```{r}
+library(pracma)
+```
+
+```{r}
+u1 <- c(1, 0, -1)
+u2 <- c(-1, 1, 1)
+cross(u1,u2)
+```
+
+Si volem normalitzar el resultat, caldrà dividir-lo per la seva norma:
+
+```{r}
+v <- cross(u1,u2)
+v / sqrt(sum(v * v))
+```
+
+Un altre exemple:
+
+```{r}
+a <- c(1, 2, 3)
+b <- c(1, -3, 3)
+v <- cross(a,b)
+nv <- sqrt(sum(v*v))
+round(v/nv, 4)
+```
+
+## Exercicis
+
+### Exercici 2
+
+Construeix una matriu que tingui 1s a la diagonal principal i també en la diagonal que està just a sobre de la principal. 
+
+```{r}
+ordre <- 7
+A7 <- matrix(0, nrow = 7, ncol = 7)
+for (i in 1:nrow(A7)) 
+  for (j in i:ncol(A7))
+    if(j-i<=1) A7[i,j] <- 1
+
+A7
+```
+
+Pots dir quin serà el seu determinant sense calcular-lo amb R? Pots demostrar que això serà així per qualsevol ordre de la matriu quadrada?
+
+### Exercici 2
+
+En el pla, l'àrea determinada per dos vectors coincideix amb el determinant.
+
+```{r}
+plot(0, type="n", xlim = c(0,10), ylim = c(0,10))
+u = c(2,1)
+v = c(2,7)
+arrows(0,0,u[1],u[2])
+arrows(0,0,v[1],v[2])
+lines(rbind(u, u+v), lty=2)
+lines(rbind(v, u+v), lty=2)
+mat <- rbind(u,v) # juntem per files els dos vectors
+mat
+det(mat)
+```
+
+Per demostrar-ho, tanquem el paral·lelogram en un rectangle i restem les àrees dels triangles que sobren.
+
+```{r}
+plot(0, type="n", xlim = c(0,10), ylim = c(0,10))
+u = c(2,1)
+v = c(2,7)
+arrows(0,0,u[1],u[2])
+arrows(0,0,v[1],v[2])
+lines(rbind(u, u+v), lty="dashed")
+lines(rbind(v, u+v), lty="dashed")
+
+uv = u+v
+polygon(x=c(0,uv[1],uv[1],0), y=c(0,0,uv[2], uv[2]))
+lines(rbind(u, c(uv[1],0)), lty="dotted")
+lines(rbind(v, c(0,uv[2])), lty="dotted")
+```
+
+## Qüestions avançades de computació
+
+Els programes de computació numèrica sovint treballen amb els nombres "en coma flotant" (_floating point_), és a dir, en la forma **mantisa \* 10^exponent**, on la mantisa és un nombre entre 0 i 1, i l'exponent pot ser molt gran en valor absolut, positiu o negatiu. (De fet això dins l'ordinador es fa en sistema binari, però no entrem per aquí ara).
+
+Així, la representació de $1/3$, per exemple, serà $0.333333\times 10^0$, i l'import total dels ingressos de l'estat espanyol al 2021, segons els pressupostos generals de l'estat (157.114.530,88 euros) estaria representat per $0.15711453088\times 10^9$.
+
+Llavors, molts dels algoritmes de càlcul, com per exemple el del determinant d'una matriu quadrada tenen versions més eficients que fan servir no els nombres enters sino nombres amb coma flotant, i per tant aproximats i amb un cert marge d'error, molt petit.
+
+Aixó explica que passin coses com el que reflectim aquí:
+
+```{r}
+A
+# Segons la propietat D4, el determinant de 2A és $2^5$ vegades el de A
+x1 <- det(2*A)
+x1
+x2 <- (2^5 * det(A))
+x2
+```
+
+Per tant, x1 i x2 són iguals. Són iguals?
+
+```{r}
+x1 == x2
+x1 - x2  # quina és la diferència?
+
+```
+
+Si el càlcul del determinant es fes de manera exacta amb nombres enters, els dos nombres serien exactament iguals. Però R treballa amb coma flotant pràcticament sempre, i quan es tracta de matrius, sempre. Llavors fent els càlculs amb coma flotant apareixen petits errors. En aquest cas hi ha una diferència, molt petita, sí, però no és zero.
+
+Si t'interessa el tema, potser (https://ca.wikipedia.org/wiki/Coma_flotant) et pot ajudar a entendre-ho millor.
+
+
